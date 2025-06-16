@@ -1,9 +1,7 @@
 package org.example;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.IntStream;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -33,22 +31,6 @@ public class Main {
         for (Map.Entry<Posicao, TreeNode<Posicao>> entry : mapaPasseio.entrySet()) {
             System.out.println("Key: " + entry.getKey() + "\t->\tValue: " + entry.getValue());
         }
-
-        /*
-        mapaPasseio.forEach((posicaoInicial,passeio) -> {
-            if (passeio != null) {
-                System.out.println();
-                System.out.println("Solução encontrada para posição inicial: " + posicaoInicial);
-                for (int i = 0; i < passeio.size(); i++) {
-                    System.out.printf("Movimento %d: %s%n", i + 1, passeio.get(i));
-                }
-                System.out.println();
-            } else {
-                System.out.println("Não foi possível encontrar uma solução.");
-            }
-        }
-        );
-        */
 
     }
 

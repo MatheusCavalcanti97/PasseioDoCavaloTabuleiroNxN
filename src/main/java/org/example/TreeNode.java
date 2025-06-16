@@ -23,13 +23,9 @@ public class TreeNode<T extends Comparable<T>> implements Comparator<TreeNode<T>
     }
 
     public TreeNode<T> addChild(T childNodeValue, int depth) {
-        final TreeNode<T> childNode = new TreeNode<T>(childNodeValue, depth);
+        final TreeNode<T> childNode = new TreeNode<>(childNodeValue, depth);
         this.childNodes.add(childNode);
         return childNode;
-    }
-
-    public void showTreeNodes() {
-        //BreathFirstSearchPrintTreeNodes.printNodes(this);
     }
 
     public T getValue() {
