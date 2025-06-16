@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Posicao {
-    private int linha;
-    private int coluna;
+public class Posicao implements Comparable<Posicao>{
+    public final int linha;
+    public final int coluna;
 
     public Posicao(int linha, int coluna) {
         this.linha = linha;
@@ -17,16 +17,8 @@ public class Posicao {
         return linha;
     }
     
-    public void setLinha(int linha) {
-        this.linha = linha;
-    }
-    
     public int getColuna() {
         return coluna;
-    }
-    
-    public void setColuna(int coluna) {
-        this.coluna = coluna;
     }
 
     @Override
@@ -39,6 +31,15 @@ public class Posicao {
     @Override
     public int hashCode() {
         return Objects.hash(linha, coluna);
+    }
+
+    @Override
+    public int compareTo(Posicao o) {
+        int comp = Integer.compare(this.linha, o.linha);
+        if (comp == 0) {
+            return Integer.compare(this.coluna, o.coluna);
+        }
+        return comp;
     }
 
     // Metodo que retorna todas as possíveis posições do movimento do cavalo
@@ -59,7 +60,7 @@ public class Posicao {
             int novaColuna = this.coluna + deslocamento[1];
 
             // Se a nova posição é válida, adiciona à lista de movimentos possíveis
-            if (this.posicaoValida(novaLinha, novaColuna, dimensao)) {
+            if (posicaoValida(novaLinha, novaColuna, dimensao)) {
                 movimentos.add(new Posicao(novaLinha, novaColuna));
             }
         }
@@ -67,7 +68,7 @@ public class Posicao {
         return movimentos;
     }
 
-    private boolean posicaoValida(int novaLinha, int novaColuna, int dimensao) {
+    public static boolean posicaoValida(int novaLinha, int novaColuna, int dimensao) {
         if((novaLinha < 0) || (novaLinha >= dimensao))
             return false;
         if((novaColuna < 0) || (novaColuna >= dimensao))
@@ -76,11 +77,15 @@ public class Posicao {
         return true;
     }
 
-    @Override
-    public String toString() {
+    public String toString2() {
         return "Posicao{" +
                 "linha=" + linha +
                 ", coluna=" + coluna +
                 '}';
+    }
+
+    @Override
+    public String toString() {
+        return "p[" + linha + "," + coluna + "]";
     }
 }

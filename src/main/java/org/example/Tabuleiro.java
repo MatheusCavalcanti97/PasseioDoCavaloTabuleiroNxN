@@ -1,5 +1,7 @@
 package org.example;
 
+import com.sun.source.tree.BinaryTree;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,27 +32,27 @@ public class Tabuleiro {
     }
     
     // Verifica se uma posição está dentro dos limites do tabuleiro
-    public boolean posicaoValida(int linha, int coluna) {
+    /*public boolean posicaoValida(int linha, int coluna) {
         return linha >= 0 && linha < dimensao && coluna >= 0 && coluna < dimensao;
-    }
+    }*/
     
     // Retorna a posição em determinada coordenada
     public Posicao getPosicao(int linha, int coluna) {
-        if (!posicaoValida(linha, coluna)) {
+        if (!Posicao.posicaoValida(linha, coluna, this.dimensao)) {
             throw new IllegalArgumentException("Posição inválida");
         }
         return tabuleiro[linha][coluna];
     }
 
     // Retorna a posição ordenada
-    public Posicao getPosicaoOrdenada(int num) {
-        if(num < 0 || num >= (dimensao * dimensao))
+    public Posicao getPosicaoOrdenada(int numOrdem) {
+        if(numOrdem < 0 || numOrdem >= (this.dimensao * this.dimensao))
             throw new IllegalArgumentException("Posição inválida");
 
-        int linha = num / dimensao;
-        int coluna = num % dimensao;
+        int linha = numOrdem / this.dimensao;
+        int coluna = numOrdem % this.dimensao;
 
-        if (!posicaoValida(linha, coluna)) {
+        if (!Posicao.posicaoValida(linha, coluna, this.dimensao)) {
             throw new IllegalArgumentException("Posição inválida");
         }
         return tabuleiro[linha][coluna];
@@ -207,6 +209,47 @@ public class Tabuleiro {
                 .count();
     }
 
+    //===================================================================================
+    //===================================================================================
 
+    public TreeNode<Posicao> encontrarPasseioDoCavalo3(Posicao inicio) {
+        int movimentos = 1;
+        final TreeNode<Posicao> initialNode = new TreeNode<Posicao>(inicio, movimentos);
+        boolean[][] visitados = new boolean[dimensao][dimensao];
+
+        // Inicializa com a posição inicial
+        visitados[inicio.getLinha()][inicio.getColuna()] = true;
+
+        if (encontrarPasseioRecursivo3(initialNode, visitados, movimentos)) {
+            return initialNode;
+        }
+        return initialNode;
+    }
+
+    private boolean encontrarPasseioRecursivo3(TreeNode<Posicao> currentNode, boolean[][] visitados, int movimentos) {
+        // Se já visitamos todas as casas, encontramos uma solução
+        if (movimentos == dimensao * dimensao) {
+            return true;
+        }
+
+        final List<Posicao> proximosMovimentos = grafoMovimentos.get(currentNode.getValue());
+
+        // Tenta cada movimento possível
+        for (Posicao proximaPosicao : proximosMovimentos) {
+            if (!visitados[proximaPosicao.linha][proximaPosicao.coluna]) {
+
+                final boolean[][] visitadosNovo = visitados.clone();
+                final TreeNode<Posicao> childNode = currentNode.addChild(proximaPosicao, movimentos + 1);
+
+                visitadosNovo[proximaPosicao.linha][proximaPosicao.coluna] = true;
+
+                if (encontrarPasseioRecursivo3(childNode, visitadosNovo, movimentos + 1)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
 }
