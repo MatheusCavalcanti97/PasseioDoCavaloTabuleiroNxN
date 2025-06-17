@@ -1,18 +1,14 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Tabuleiro {
     private final int dimensao;
     private final Posicao[][] tabuleiro;
     private final Map<Posicao, List<Posicao>> grafoMovimentos;
+
+    private final Map<Posicao, Integer> mapaPosicaoInicialQuantidadeSolucoes;
     
     // Construtor
     public Tabuleiro(int dimensao) {
@@ -24,6 +20,8 @@ public class Tabuleiro {
         inicializarTabuleiro();
 
         this.grafoMovimentos = criarGrafoMovimentosCavalo();
+
+        this.mapaPosicaoInicialQuantidadeSolucoes = new HashMap<>();
     }
     
     // Inicializa o tabuleiro criando posições
@@ -96,6 +94,7 @@ public class Tabuleiro {
         return todosMovimentosCavalo;
     }
 
+    /*
     public List<Posicao> encontrarPasseioDoCavalo(Posicao inicio) {
         List<Posicao> caminho = new ArrayList<>();
         Set<Posicao> visitados = new HashSet<>();
@@ -213,47 +212,86 @@ public class Tabuleiro {
                 .count();
     }
 
+     */
+
     //===================================================================================
     //===================================================================================
 
     public TreeNode<Posicao> encontrarPasseioDoCavalo3(Posicao inicio) {
         int movimentos = 1;
-        final TreeNode<Posicao> initialNode = new TreeNode<Posicao>(inicio, movimentos);
+        final TreeNode<Posicao> initialNode = new TreeNode<Posicao>(inicio, movimentos, null);
         boolean[][] visitados = new boolean[dimensao][dimensao];
 
         // Inicializa com a posição inicial
-        visitados[inicio.getLinha()][inicio.getColuna()] = true;
+        visitados[inicio.linha][inicio.coluna] = true;
 
-        if (encontrarPasseioRecursivo3(initialNode, visitados, movimentos)) {
+        if(encontrarPasseioRecursivo3(initialNode, visitados, movimentos)) {
             return initialNode;
         }
-        return initialNode;
+        return null;
     }
 
     private boolean encontrarPasseioRecursivo3(TreeNode<Posicao> currentNode, boolean[][] visitados, int movimentos) {
         // Se já visitamos todas as casas, encontramos uma solução
         if (movimentos == dimensao * dimensao) {
+            System.out.println("==========================");
+
+            final List<Posicao> caminho = new ArrayList<>();
+            TreeNode<Posicao> currToPrint = currentNode;
+
+            while(currToPrint != null) {
+                caminho.add(currToPrint.value);
+                currToPrint = currToPrint.parentNode;
+            }
+
+            Collections.reverse(caminho);
+
+            Posicao primeiraPosicao = caminho.getFirst();
+            int quantidadeSolucoes = 1 + this.mapaPosicaoInicialQuantidadeSolucoes.getOrDefault(primeiraPosicao, 0);
+            this.mapaPosicaoInicialQuantidadeSolucoes.put(primeiraPosicao, quantidadeSolucoes);
+
+            System.out.println("Posição Inicial: " + primeiraPosicao + " - Quantidade de Soluções Encontradas (até o momento): " + quantidadeSolucoes);
+            //System.out.println("Solução mais recente: " + caminho.stream().map(Object::toString).collect(Collectors.joining(" -> ")));
+
             return true;
         }
 
-        final List<Posicao> proximosMovimentos = grafoMovimentos.get(currentNode.getValue());
+        final List<Posicao> proximosMovimentos = grafoMovimentos.get(currentNode.value);
 
-        // Tenta cada movimento possível
-        for (Posicao proximaPosicao : proximosMovimentos) {
+        //((movimentos % 2 == 0) ?
+                (proximosMovimentos.parallelStream())
+        //        :
+        //        (proximosMovimentos.stream())
+        //)
+        .forEach(proximaPosicao -> {
             if (!visitados[proximaPosicao.linha][proximaPosicao.coluna]) {
 
-                final boolean[][] visitadosNovo = visitados.clone();
-                final TreeNode<Posicao> childNode = currentNode.addChild(proximaPosicao, movimentos + 1);
+                final TreeNode<Posicao> childNode = currentNode.addChild(proximaPosicao);
 
+                boolean[][] visitadosNovo = new boolean[dimensao][dimensao];
+                for (int i = 0; i < dimensao; i++) {
+                    visitadosNovo[i] = Arrays.copyOf(visitados[i], dimensao);
+                }
                 visitadosNovo[proximaPosicao.linha][proximaPosicao.coluna] = true;
 
-                if (encontrarPasseioRecursivo3(childNode, visitadosNovo, movimentos + 1)) {
-                    return true;
-                }
+                encontrarPasseioRecursivo3(childNode, visitadosNovo, movimentos + 1);
             }
+        });
+
+
+        //System.out.println("#########################");
+        if(currentNode.depth < (dimensao * dimensao - 2) &&
+                currentNode.childNodes.isEmpty() &&
+                currentNode.parentNode != null)
+        {
+            //System.out.println("currentNode.parentNode.deleteChild(" + currentNode + ")");
+            currentNode.parentNode.deleteChild(currentNode);
         }
 
         return false;
     }
 
+    public Map<Posicao, Integer> getMapaPosicaoInicialQuantidadeSolucoes() {
+        return mapaPosicaoInicialQuantidadeSolucoes;
+    }
 }

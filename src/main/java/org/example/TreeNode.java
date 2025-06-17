@@ -10,11 +10,13 @@ public class TreeNode<T extends Comparable<T>> implements Comparator<TreeNode<T>
 
     public final T value;
     public final int depth;
+    public final TreeNode<T> parentNode;
     public final List<TreeNode<T>> childNodes;
 
-    public TreeNode(T value, int depth) {
+    public TreeNode(T value, int depth, TreeNode<T> parentNode) {
         this.value = value;
         this.depth = depth;
+        this.parentNode = parentNode;
         this.childNodes = new LinkedList<>();
     }
 
@@ -22,10 +24,18 @@ public class TreeNode<T extends Comparable<T>> implements Comparator<TreeNode<T>
         this.childNodes.add(childNode);
     }
 
-    public TreeNode<T> addChild(T childNodeValue, int depth) {
-        final TreeNode<T> childNode = new TreeNode<>(childNodeValue, depth);
+    public TreeNode<T> addChild(T childNodeValue) {
+        final TreeNode<T> childNode = new TreeNode<>(childNodeValue, depth + 1, this);
         this.childNodes.add(childNode);
         return childNode;
+    }
+
+    public boolean deleteChild(T childNodeValue) {
+        return this.childNodes.removeIf(child -> child.value.equals(childNodeValue));
+    }
+
+    public boolean deleteChild(TreeNode<T> childNode) {
+        return this.childNodes.remove(childNode);
     }
 
     public T getValue() {
@@ -47,8 +57,11 @@ public class TreeNode<T extends Comparable<T>> implements Comparator<TreeNode<T>
         return "\r\n" + spacing + "TreeNode{" +
                 "value=" + value +
                 ", depth=" + depth +
-                ", childNodes=" + (childNodes.isEmpty() ? "[EMPTY]" : childNodes.stream().map(Object::toString).collect(Collectors.joining(","))) +
-                spacing + "}\r\n";
+                ", childNodes=" +
+                (childNodes.isEmpty() ?
+                        "[EMPTY]" :
+                        childNodes.stream().map(Object::toString).collect(Collectors.joining(",")) + spacing) +
+                "}\r\n";
     }
 }
 
