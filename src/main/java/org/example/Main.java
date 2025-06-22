@@ -13,23 +13,27 @@ public class Main {
     public static void main(String[] args) {
 
         System.out.println("Date Init: " + new Date());
+        long timeIni = System.currentTimeMillis();
 
-        final int dimensaoTabuleiro = 6;
-        final Tabuleiro tabuleiro = new Tabuleiro(dimensaoTabuleiro);
+        final int DIMENSAO_TABULEIRO = 6;
 
-        final Map<Posicao, TreeNode<Posicao>> mapaTreeCaminhos = new HashMap<>();
+        final int dim = DIMENSAO_TABULEIRO;
+        final Tabuleiro tabuleiro = new Tabuleiro(dim);
+
+        //final Map<Posicao, TreeNode<Posicao>> mapaTreeCaminhos = new HashMap<>();
 
         IntStream
-                .range(0, dimensaoTabuleiro * dimensaoTabuleiro)
+                .range(0, dim * dim)
                 //.range(0, 1)
                 .sorted()
-                .parallel()
+                //.parallel()
                 .forEach(index ->
                         {
                             final Posicao posicaoInicial = tabuleiro.getPosicaoOrdenada(index);
-                            final TreeNode<Posicao> treeCaminhos = tabuleiro.encontrarPasseioDoCavalo3(posicaoInicial);
+                            //System.out.println("posicaoInicial: " + posicaoInicial);
 
-                            mapaTreeCaminhos.put(posicaoInicial, treeCaminhos);
+                            final TreeNode<Posicao> treeCaminhos = tabuleiro.encontrarPasseioDoCavalo5(posicaoInicial);
+                            //mapaTreeCaminhos.put(posicaoInicial, treeCaminhos);
                         }
                 );
 
@@ -37,22 +41,20 @@ public class Main {
             System.out.println("Key: " + entry.getKey() + "\t->\tValue: " + entry.getValue());
         }*/
 
-
         System.out.println("Date End: " + new Date());
-        tabuleiro.getMapaPosicaoInicialQuantidadeSolucoes()
-                .entrySet()
-                .stream()
-                .sorted((e1,e2) -> e1.getValue().compareTo(e2.getValue()))
-                .forEach(e -> {
-                    System.out.println("Posição " + e.getKey() + " - Quantidade soluções: " + e.getValue());
-                });
+        long timeEnd = System.currentTimeMillis();
 
         int somaTotal = tabuleiro.getMapaPosicaoInicialQuantidadeSolucoes()
-                .values()
+                .entrySet()
                 .stream()
+                .sorted((e1,e2) -> e1.getKey().compareTo(e2.getKey()))
+                .peek(e -> System.out.println("Posição " + e.getKey() + " - Quantidade soluções: " + e.getValue()) )
+                .map(Map.Entry::getValue)
                 .reduce(0, Integer::sum);
-        System.out.println("Soma Total: " + somaTotal);
+        System.out.println("Total de soluções de um tabuleiro "+dim+"x"+dim+": " + somaTotal);
+        System.out.println();
 
+        System.out.println("Tempo total: " + (timeEnd - timeIni) + " ms");
     }
 
 }

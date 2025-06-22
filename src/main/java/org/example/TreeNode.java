@@ -34,8 +34,8 @@ public class TreeNode<T extends Comparable<T>> implements Comparator<TreeNode<T>
         return this.childNodes.removeIf(child -> child.value.equals(childNodeValue));
     }
 
-    public boolean deleteChild(TreeNode<T> childNode) {
-        return this.childNodes.remove(childNode);
+    public void deleteChild(TreeNode<T> childNode) {
+        this.childNodes.remove(childNode);
     }
 
     public T getValue() {
