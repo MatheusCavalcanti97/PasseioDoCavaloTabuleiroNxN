@@ -2,7 +2,6 @@ package org.example;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Tabuleiro {
@@ -11,6 +10,7 @@ public class Tabuleiro {
     private final Map<Posicao, List<Posicao>> grafoMovimentos;
 
     private final Map<Posicao, Integer> mapaPosicaoInicialQuantidadeSolucoes;
+    private final Map<Posicao, TreeNode<Posicao>> mapaPosicaoInicialTreeNode;
 
     // Construtor
     public Tabuleiro(int dimensao) {
@@ -24,6 +24,7 @@ public class Tabuleiro {
         this.grafoMovimentos = criarGrafoMovimentosCavalo();
 
         this.mapaPosicaoInicialQuantidadeSolucoes = new ConcurrentHashMap<>();
+        this.mapaPosicaoInicialTreeNode = new ConcurrentHashMap<>();
     }
 
     // Inicializa o tabuleiro criando posições
@@ -80,6 +81,10 @@ public class Tabuleiro {
 
     public Map<Posicao, Integer> getMapaPosicaoInicialQuantidadeSolucoes() {
         return mapaPosicaoInicialQuantidadeSolucoes;
+    }
+
+    public Map<Posicao, TreeNode<Posicao>> getMapaPosicaoInicialTreeNode() {
+        return mapaPosicaoInicialTreeNode;
     }
 
     // Metodo para gerar e armazenar todos os movimentos possíveis do cavalo
@@ -225,7 +230,7 @@ public class Tabuleiro {
 
     public TreeNode<Posicao> encontrarPasseioDoCavalo3(Posicao inicio) {
         int movimentos = 1;
-        final TreeNode<Posicao> initialNode = new TreeNode<Posicao>(inicio, movimentos, null);
+        final TreeNode<Posicao> initialNode = new TreeNode<>(inicio, movimentos, null);
         boolean[][] visitados = new boolean[dimensao][dimensao];
 
         // Inicializa com a posição inicial
@@ -301,7 +306,7 @@ public class Tabuleiro {
 
     public TreeNode<Posicao> encontrarPasseioDoCavalo4(Posicao posicaoInicial) {
         int movimentos = 1;
-        final TreeNode<Posicao> treeNodeInicial = new TreeNode<Posicao>(posicaoInicial, movimentos, null);
+        final TreeNode<Posicao> treeNodeInicial = new TreeNode<>(posicaoInicial, movimentos, null);
         boolean[][] visitados = new boolean[dimensao][dimensao];
 
         this.mapaPosicaoInicialQuantidadeSolucoes.put(posicaoInicial, 0);
@@ -337,7 +342,7 @@ public class Tabuleiro {
         final List<Posicao> proximosMovimentos = grafoMovimentos.get(currentNode.value);
 
         // Paralelizar apenas no início da árvore
-        final boolean usarParalelo = true; //movimentos < (dimensao * dimensao) / 4;
+        final boolean usarParalelo = movimentos < (dimensao * dimensao) / 4;
 
         final Stream<Posicao> stream = usarParalelo ?
                 proximosMovimentos.parallelStream() :
@@ -389,7 +394,7 @@ public class Tabuleiro {
 
         this.mapaPosicaoInicialQuantidadeSolucoes.put(posicaoInicial, 0);
 
-        if(dimensao * dimensao > 63){
+        if (dimensao * dimensao > 63) {
             throw new IllegalArgumentException("This implementations supports a maximum of 63 visited positions, but the given board requires " + (dimensao * dimensao) + ".");
         }
 
@@ -463,5 +468,170 @@ public class Tabuleiro {
         return visitados;
     }
 
+
+    //===================================================================================
+    //===================================================================================
+
+    public TreeNode<Posicao> encontrarPasseioDoCavalo6(Posicao posicaoInicial) {
+        int movimentos = 1;
+        final TreeNode<Posicao> treeNodeInicial = new TreeNode<Posicao>(posicaoInicial, movimentos, null);
+
+        if (dimensao * dimensao > 63) {
+            throw new IllegalArgumentException("This implementations supports a maximum of 63 visited positions, but the given board requires " + (dimensao * dimensao) + ".");
+        }
+
+        this.mapaPosicaoInicialQuantidadeSolucoes.put(posicaoInicial, 0);
+
+        // Inicializa com a posição inicial
+        long bitMaskVisitados = marcarPosicaoVisitada(0L, posicaoInicial);
+
+        if (encontrarPasseioRecursivo6(treeNodeInicial, bitMaskVisitados, movimentos)) {
+            return treeNodeInicial;
+        }
+        return null;
+    }
+
+    private boolean encontrarPasseioRecursivo6(TreeNode<Posicao> currentNode, long bitMaskVisitados, int movimentos) {
+        // Se já visitamos todas as casas, encontramos uma solução
+        if (movimentos == dimensao * dimensao) {
+
+            TreeNode<Posicao> currToPrint = currentNode;
+            while ((currToPrint != null) && (currToPrint.parentNode != null)) {
+                currToPrint = currToPrint.parentNode;
+            }
+
+            final Posicao primeiraPosicao = currToPrint.value;
+            this.mapaPosicaoInicialQuantidadeSolucoes.merge(primeiraPosicao, 1, Integer::sum);
+
+            //System.out.println("==========================");
+            //System.out.println("Posição Inicial: " + primeiraPosicao +
+            //        ", Quantidade de Soluções Encontradas (até o momento): " + this.mapaPosicaoInicialQuantidadeSolucoes.get(primeiraPosicao));
+
+            return true;
+        }
+
+        final List<Posicao> proximosMovimentos = grafoMovimentos.get(currentNode.value);
+
+        // Paralelizar apenas no início da árvore
+        final boolean usarParalelo = movimentos < (dimensao * dimensao) / 4;
+
+        final Stream<Posicao> stream = usarParalelo ?
+                proximosMovimentos.parallelStream() :
+                proximosMovimentos.stream();
+
+        stream.forEach(proximaPosicao -> {
+            if (!isPosicaoVisitada(bitMaskVisitados, proximaPosicao)) {
+
+                final TreeNode<Posicao> childNode = currentNode.addChild(proximaPosicao);
+                long bitMaskVisitadosNovo = marcarPosicaoVisitada(bitMaskVisitados, proximaPosicao);
+
+                encontrarPasseioRecursivo6(childNode, bitMaskVisitadosNovo, movimentos + 1);
+            }
+        });
+
+        //Se chegou aqui, então:
+        //  (1) é um nó intermediário, ou
+        //  (2) é um nó folha de um caminho sem solução
+
+        // Se (2), remove o nó da árvore para liberar memória
+        if ((currentNode.childNodes.isEmpty()) && (currentNode.parentNode != null)) {
+            //System.out.println("currentNode.parentNode.deleteChild(" + currentNode + ")");
+            currentNode.parentNode.deleteChild(currentNode);
+        }
+
+        return false;
+    }
+
+    //
+    //===================================================================================
+    //===================================================================================
+
+    /**
+     *
+     */
+    public int encontrarPasseioDoCavalo7(Posicao posicaoInicial) {
+        int movimentos = 1;
+        final TreeNode<Posicao> treeNodeInicial = new TreeNode<Posicao>(posicaoInicial, movimentos, null);
+
+        if (dimensao * dimensao > 63) {
+            throw new IllegalArgumentException(
+                    "This implementations supports a path with maximum of 63 visited positions, " +
+                            "but the given board requires " + (dimensao * dimensao) + ".");
+        }
+
+        final TreeNode<Posicao> treeNodeInicialRegistrado = this.mapaPosicaoInicialTreeNode.get(posicaoInicial);
+        if(treeNodeInicialRegistrado != null) {
+            this.mapaPosicaoInicialTreeNode.put(posicaoInicial, treeNodeInicial);
+        }
+
+        //Se já calculou a posição espelho original, usa-o
+        final Posicao posicaoInicialEspelhoOriginal = posicaoInicial.posicaoEspelhoOriginal(dimensao);
+        final Integer quantidadeSolucoesEspelhoOriginal = this.mapaPosicaoInicialQuantidadeSolucoes.get(posicaoInicialEspelhoOriginal);
+        if (quantidadeSolucoesEspelhoOriginal != null) {
+            this.mapaPosicaoInicialQuantidadeSolucoes.put(posicaoInicial, quantidadeSolucoesEspelhoOriginal);
+
+            return quantidadeSolucoesEspelhoOriginal;
+        }
+        // Começa a quantidade com zero e calcula o total de soluções
+        else {
+            this.mapaPosicaoInicialQuantidadeSolucoes.put(posicaoInicial, 0);
+
+            // Inicializa com a posição inicial
+            long bitMaskVisitados = marcarPosicaoVisitada(0L, posicaoInicial);
+
+            encontrarPasseioRecursivo7(treeNodeInicial, bitMaskVisitados, movimentos);
+        }
+        return this.mapaPosicaoInicialQuantidadeSolucoes.get(posicaoInicial);
+    }
+
+    private void encontrarPasseioRecursivo7(TreeNode<Posicao> currentNode, long bitMaskVisitados, int movimentos) {
+        // Se já visitamos todas as casas, encontramos uma solução
+        if (movimentos == dimensao * dimensao) {
+
+            TreeNode<Posicao> currToPrint = currentNode;
+            while ((currToPrint != null) && (currToPrint.parentNode != null)) {
+                currToPrint = currToPrint.parentNode;
+            }
+
+            final Posicao primeiraPosicao = currToPrint.value;
+            this.mapaPosicaoInicialQuantidadeSolucoes.merge(primeiraPosicao, 1, Integer::sum);
+
+            //System.out.println("==========================");
+            //System.out.println("Posição Inicial: " + primeiraPosicao +
+            //        ", Quantidade de Soluções Encontradas (até o momento): " + this.mapaPosicaoInicialQuantidadeSolucoes.get(primeiraPosicao));
+
+            return;
+        }
+
+        final List<Posicao> proximosMovimentos = grafoMovimentos.get(currentNode.value);
+
+        // Paralelizar apenas no início da árvore
+        final boolean usarParalelo = movimentos < (dimensao * dimensao) / 4;
+
+        final Stream<Posicao> stream = usarParalelo ?
+                proximosMovimentos.parallelStream() :
+                proximosMovimentos.stream();
+
+        stream.forEach(proximaPosicao -> {
+            if (!isPosicaoVisitada(bitMaskVisitados, proximaPosicao)) {
+
+                final TreeNode<Posicao> childNode = currentNode.addChild(proximaPosicao);
+                long bitMaskVisitadosNovo = marcarPosicaoVisitada(bitMaskVisitados, proximaPosicao);
+
+                encontrarPasseioRecursivo7(childNode, bitMaskVisitadosNovo, movimentos + 1);
+            }
+        });
+
+        //Se chegou aqui, então:
+        //  (1) é um nó intermediário, ou
+        //  (2) é um nó folha de um caminho sem solução
+
+        // Se (2), remove o nó da árvore para liberar memória
+        if ((currentNode.childNodes.isEmpty()) && (currentNode.parentNode != null)) {
+            //System.out.println("currentNode.parentNode.deleteChild(" + currentNode + ")");
+            currentNode.parentNode.deleteChild(currentNode);
+        }
+
+    }
 
 }
