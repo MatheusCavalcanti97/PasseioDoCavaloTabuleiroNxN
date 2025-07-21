@@ -1,4 +1,4 @@
-package org.example;
+package br.com.davidalain;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +17,7 @@ public class Tabuleiro {
         if (dimensao <= 0) {
             throw new IllegalArgumentException("Dimensão deve ser maior que zero");
         }
+
         this.dimensao = dimensao;
         this.tabuleiro = new Posicao[dimensao][dimensao];
         inicializarTabuleiro();
@@ -550,8 +551,8 @@ public class Tabuleiro {
      *
      */
     public int encontrarPasseioDoCavalo7(Posicao posicaoInicial) {
-        int movimentos = 1;
-        final TreeNode<Posicao> treeNodeInicial = new TreeNode<Posicao>(posicaoInicial, movimentos, null);
+        int movimentosRealizados = 1;
+        final TreeNode<Posicao> treeNodeInicial = new TreeNode<Posicao>(posicaoInicial, movimentosRealizados, null);
 
         if (dimensao * dimensao > 63) {
             throw new IllegalArgumentException(
@@ -579,14 +580,14 @@ public class Tabuleiro {
             // Inicializa com a posição inicial
             long bitMaskVisitados = marcarPosicaoVisitada(0L, posicaoInicial);
 
-            encontrarPasseioRecursivo7(treeNodeInicial, bitMaskVisitados, movimentos);
+            encontrarPasseioRecursivo7(treeNodeInicial, bitMaskVisitados, movimentosRealizados);
         }
         return this.mapaPosicaoInicialQuantidadeSolucoes.get(posicaoInicial);
     }
 
-    private void encontrarPasseioRecursivo7(TreeNode<Posicao> currentNode, long bitMaskVisitados, int movimentos) {
+    private void encontrarPasseioRecursivo7(TreeNode<Posicao> currentNode, long bitMaskVisitados, int movimentosRealizados) {
         // Se já visitamos todas as casas, encontramos uma solução
-        if (movimentos == dimensao * dimensao) {
+        if (movimentosRealizados == dimensao * dimensao) {
 
             TreeNode<Posicao> currToPrint = currentNode;
             while ((currToPrint != null) && (currToPrint.parentNode != null)) {
@@ -606,7 +607,7 @@ public class Tabuleiro {
         final List<Posicao> proximosMovimentos = grafoMovimentos.get(currentNode.value);
 
         // Paralelizar apenas no início da árvore
-        final boolean usarParalelo = movimentos < (dimensao * dimensao) / 4;
+        final boolean usarParalelo = movimentosRealizados < (dimensao * dimensao) / 4;
 
         final Stream<Posicao> stream = usarParalelo ?
                 proximosMovimentos.parallelStream() :
@@ -618,7 +619,7 @@ public class Tabuleiro {
                 final TreeNode<Posicao> childNode = currentNode.addChild(proximaPosicao);
                 long bitMaskVisitadosNovo = marcarPosicaoVisitada(bitMaskVisitados, proximaPosicao);
 
-                encontrarPasseioRecursivo7(childNode, bitMaskVisitadosNovo, movimentos + 1);
+                encontrarPasseioRecursivo7(childNode, bitMaskVisitadosNovo, movimentosRealizados + 1);
             }
         });
 

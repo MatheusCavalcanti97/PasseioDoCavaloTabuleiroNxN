@@ -1,4 +1,4 @@
-package org.example;
+package br.com.davidalain;
 
 import java.util.Date;
 import java.util.Map;
@@ -14,7 +14,7 @@ public class Main {
         System.out.println("Date Ini: " + new Date());
         long timeIni = System.currentTimeMillis();
 
-        final int dimensaoTabuleiro = 5;
+        final int dimensaoTabuleiro = 6;
 
         final Tabuleiro tabuleiro = new Tabuleiro(dimensaoTabuleiro);
 
@@ -46,7 +46,7 @@ public class Main {
         int somaTotal = tabuleiro.getMapaPosicaoInicialQuantidadeSolucoes()
                 .entrySet()
                 .stream()
-                .sorted((e1, e2) -> e1.getKey().compareTo(e2.getKey()))
+                .sorted(Map.Entry.comparingByKey())
                 .peek(e -> System.out.println("Posição " + e.getKey() + " - Quantidade soluções: " + e.getValue()))
                 .map(Map.Entry::getValue)
                 .reduce(0, Integer::sum);

@@ -1,5 +1,6 @@
-package org.example;
+package br.com.davidalain;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +50,11 @@ public class TreeNode<T extends Comparable<T>> implements Comparator<TreeNode<T>
     @Override
     public int compare(TreeNode<T> o1, TreeNode<T> o2) {
         return o1.value.compareTo(o2.value);
+    }
+
+    public static <K extends Comparable<K>> Comparator<TreeNode<K>> comparingByValue(){
+        return (Comparator<TreeNode<K>> & Serializable)
+                (t1, t2) -> t1.value.compareTo(t2.value);
     }
 
     @Override

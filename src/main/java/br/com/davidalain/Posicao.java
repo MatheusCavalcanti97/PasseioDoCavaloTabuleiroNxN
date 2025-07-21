@@ -1,4 +1,4 @@
-package org.example;
+package br.com.davidalain;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class Posicao implements Comparable<Posicao> {
     }
 
     // Metodo que retorna todas as possíveis posições do movimento do cavalo
-    public List<Posicao> movimentosPossiveisCavalo(int dimensao) {
+    public List<Posicao> movimentosPossiveisCavalo(int dimensaoTabuleiro) {
         List<Posicao> movimentos = new ArrayList<>();
 
         // Os 8 possíveis movimentos do cavalo
@@ -60,7 +60,7 @@ public class Posicao implements Comparable<Posicao> {
             int novaColuna = this.coluna + deslocamento[1];
 
             // Se a nova posição é válida, adiciona à lista de movimentos possíveis
-            if (posicaoValida(novaLinha, novaColuna, dimensao)) {
+            if (posicaoValida(novaLinha, novaColuna, dimensaoTabuleiro)) {
                 movimentos.add(new Posicao(novaLinha, novaColuna));
             }
         }
