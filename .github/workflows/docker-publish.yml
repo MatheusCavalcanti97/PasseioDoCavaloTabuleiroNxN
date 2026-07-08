@@ -5,7 +5,6 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # 1. Fase de Testes (CI)
   test:
     runs-on: ubuntu-latest
     steps:
@@ -17,12 +16,10 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Executar testes com Maven
-        run: mvn test
+      - name: Limpar e Testar
+        run: mvn clean test
 
-  # 2. Fase de Build e Publicação no Docker Hub (CD)
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
