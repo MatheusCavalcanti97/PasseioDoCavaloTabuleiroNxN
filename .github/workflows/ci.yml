@@ -1,6 +1,5 @@
 name: CI/CD - Passeio do Cavalo API
 
-# Define os gatilhos: a pipeline roda em qualquer push ou pull request para a branch 'main'
 on:
   push:
     branches: [ "main", "master" ]
@@ -12,23 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Passo 1: Baixa o código do seu repositório para a máquina virtual do GitHub
-    - name: 📥 Checkout do Repositório
+    - name: Checkout do Repositório
       uses: actions/checkout@v4
 
-    # Passo 2: Prepara o ambiente com o Java 21 (LTS)
-    - name: ☕ Configurar JDK 21
+    - name: Configurar JDK 21
       uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
-        cache: maven # Acelera os próximos builds guardando as dependências do Maven
+        cache: maven
 
-    # Passo 3: Compila o projeto e empacota o .jar
-    # (Se houvessem testes JUnit no código, o 'mvn clean package' rodaria eles automaticamente aqui)
-    - name: 🔨 Compilar projeto com Maven
+    - name: Compilar projeto com Maven
       run: mvn clean package
 
-    # Passo 4: Testa o Dockerfile construindo a imagem localmente no GitHub
-    - name: 🐳 Testar Build da Imagem Docker
+    - name: Testar Build da Imagem Docker
       run: docker build -t passeio-cavalo-teste:ci .

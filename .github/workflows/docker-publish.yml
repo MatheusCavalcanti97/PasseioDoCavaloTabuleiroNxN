@@ -36,7 +36,7 @@ jobs:
 
       - name: Build e Push da imagem
         uses: docker/build-push-action@v5
-        with:
+        with: 
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/passeio-cavalo:latest
