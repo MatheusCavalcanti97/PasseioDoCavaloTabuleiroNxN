@@ -10,11 +10,15 @@ import java.util.stream.IntStream;
 @RequestMapping("/api/cavalo")
 public class PasseioController {
 
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("UP");
+    }
+
     @PostMapping("/calcular")
     public ResponseEntity<Map<String, Object>> calcularPasseio(@RequestBody Map<String, Integer> request) {
         int dimensao = request.getOrDefault("dimensao", 6);
         
-        // Proteção básica para não travar o servidor
         if (dimensao > 8) { 
             return ResponseEntity.badRequest().body(Map.of("erro", "Dimensão muito alta, máximo permitido é 8"));
         }
@@ -22,7 +26,6 @@ public class PasseioController {
         long timeIni = System.currentTimeMillis();
         final Tabuleiro tabuleiro = new Tabuleiro(dimensao);
 
-        // Seu processamento
         IntStream.range(0, dimensao * dimensao)
                 .mapToObj(i -> tabuleiro.getPosicaoOrdenada(i).posicaoEspelhoOriginal(dimensao))
                 .collect(Collectors.toSet())
