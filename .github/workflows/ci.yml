@@ -21,4 +21,6 @@ jobs:
           cache: maven
 
       - name: Compilar e Testar
+        env:
+          API_TOKEN: token-teste-ci
         run: mvn clean verify
