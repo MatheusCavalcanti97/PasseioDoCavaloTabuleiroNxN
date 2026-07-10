@@ -12,8 +12,11 @@ import java.util.stream.IntStream;
 @RequestMapping("/api/cavalo")
 public class PasseioController {
 
-    @Value("${API_TOKEN}")
-    private String tokenServidor;
+    private final String tokenServidor;
+
+    public PasseioController(@Value("${API_TOKEN}") String tokenServidor) {
+        this.tokenServidor = tokenServidor;
+    }
 
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
@@ -22,8 +25,8 @@ public class PasseioController {
 
     @PostMapping("/calcular")
     public ResponseEntity<Map<String, Object>> calcularPasseio(@RequestBody CavaloRequest request) {
-        
-        if (request.getToken() == null || !request.getToken().equals(tokenServidor)) {
+
+        if (request == null || request.getToken() == null || !request.getToken().equals(tokenServidor)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("erro", "Acesso negado. Token inválido ou ausente."));
         }
