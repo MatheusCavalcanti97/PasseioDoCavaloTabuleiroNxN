@@ -11,19 +11,8 @@ public class CavaloRequest {
         this.token = token;
     }
 
-    public int getDimensao() {
-        return dimensao;
-    }
-
-    public void setDimensao(int dimensao) {
-        this.dimensao = dimensao;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
+    public int getDimensao() { return dimensao; }
+    public void setDimensao(int dimensao) { this.dimensao = dimensao; }
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
 }

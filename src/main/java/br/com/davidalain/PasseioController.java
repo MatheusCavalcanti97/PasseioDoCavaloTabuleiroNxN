@@ -25,7 +25,8 @@ public class PasseioController {
 
     @PostMapping("/calcular")
     public ResponseEntity<Map<String, Object>> calcularPasseio(@RequestBody CavaloRequest request) {
-
+        
+        // Validação de segurança: verifica se o request chegou e se o token é igual ao definido no Kubernetes
         if (request == null || request.getToken() == null || !request.getToken().equals(tokenServidor)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("erro", "Acesso negado. Token inválido ou ausente."));
