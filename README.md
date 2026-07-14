@@ -5,7 +5,7 @@ relacionado ao movimento do cavalo no tabuleiro de xadrez.
 
 Dado um tabuleiro de xadrez (_normalmente de 8x8 casas_), o problema pergunta:
 
-    É possível mover um cavalo pelo tabuleiro de forma que ele visite cada casa exatamente uma vez?
+&nbsp;&nbsp;&nbsp;&nbsp;É possível mover um cavalo pelo tabuleiro de forma que ele visite cada casa exatamente uma vez?
 
 Esse percurso é chamado de passeio do cavalo ([Knight's tour](https://en.wikipedia.org/wiki/Knight%27s_tour)).
 
@@ -16,15 +16,16 @@ do passeio do cavalo de um tabuleiro de xadrez de dimensão **N**x**N**.
 
 ## **Como utilizar a API**
 
+Para testar o sistema, você pode realizar chamadas HTTP nos endpoints abaixo, dependendo de onde o serviço estiver rodando.
 
-Para transformar o cálculo matemático em um serviço acessível, o sistema foi exposto através de uma API REST.
+### 1. Ambientes de Teste
+* **Local:** `http://localhost:8080/api/cavalo`
+* **Produção (Kubernetes):** `https://passeio-cavalo.starfishcloud.com.br/api/cavalo`
 
-*   **Base URL: http://localhost:8080/api/cavalo (ou a URL de produção correspondente, ex: https://passeio-cavalo.starfishcloud.com.br/api/cavalo)**
+### 2. Iniciar o cálculo
+Utilize este endpoint para disparar o processamento. O sistema calculará o total de soluções possíveis de forma síncrona.
 
-### 1. Iniciar o cálculo
-Utilize este endpoint para disparar o processamento do passeio do cavalo.
-
-* **Endpoint:** `POST /api/cavalo/calcular`
+* **Endpoint:** `POST {BASE_URL}/calcular`
 * **Corpo da requisição (JSON):**
     ```json
     {
@@ -32,23 +33,11 @@ Utilize este endpoint para disparar o processamento do passeio do cavalo.
       "token": "seu_token_aqui"
     }
     ```
-* **Nota:** O cálculo é processado em background para não bloquear o servidor.
-
-### 2. Monitorar o progresso
-Como o processamento pode ser demorado (especialmente em tabuleiros maiores), utilize este endpoint para consultar o status atual da execução.
-
-* **Endpoint:** `GET /api/cavalo/status`
-* **Resposta esperada:**
-    ```json
-    {
-      "progresso": "45.00%",
-      "concluidas": 7,
-      "total": 16
-    }
-    ```
 
 ### 3. Verificação de prontidão
-* **Endpoint:** `GET /api/cavalo/health`
-* **Resposta:** Retorna `UP` se o serviço estiver rodando corretamente.
+Utilize este endpoint para validar se o servidor está respondendo.
+
+* **Endpoint:** `GET {BASE_URL}/health`
+* **Resposta esperada:** `UP`
 
 ---
